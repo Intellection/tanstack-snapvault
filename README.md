@@ -25,38 +25,44 @@ A lightweight, secure file upload and access API built with Next.js 15 and Tailw
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd tanstack-snapvault
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Set up environment variables**
+
    ```bash
    cp .env.example .env.local
    ```
-   
+
    Edit `.env.local` and set your JWT secret:
+
    ```env
    JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
    ```
 
 4. **Create required directories**
+
    ```bash
    mkdir -p data uploads
    ```
 
 5. **Run the development server**
+
    ```bash
    npm run dev
    ```
@@ -93,6 +99,7 @@ A lightweight, secure file upload and access API built with Next.js 15 and Tailw
 ### Authentication Endpoints
 
 #### Register User
+
 ```http
 POST /api/auth/register
 Content-Type: application/json
@@ -105,6 +112,7 @@ Content-Type: application/json
 ```
 
 #### Login User
+
 ```http
 POST /api/auth/login
 Content-Type: application/json
@@ -116,12 +124,14 @@ Content-Type: application/json
 ```
 
 #### Get Current User
+
 ```http
 GET /api/auth/me
 Authorization: Bearer <token>
 ```
 
 #### Logout
+
 ```http
 POST /api/auth/logout
 Authorization: Bearer <token>
@@ -130,6 +140,7 @@ Authorization: Bearer <token>
 ### File Management Endpoints
 
 #### Upload Files
+
 ```http
 POST /api/files/upload
 Content-Type: multipart/form-data
@@ -143,16 +154,19 @@ Form data:
 ```
 
 #### Download File
+
 ```http
 GET /api/files/{accessToken}
 ```
 
 #### Get File Info
+
 ```http
 GET /api/files/{accessToken}?info=true
 ```
 
 #### List User Files
+
 ```http
 GET /api/files/my
 Authorization: Bearer <token>
@@ -162,9 +176,63 @@ Query parameters:
 - offset: (number, optional) Number of files to skip (default: 0)
 ```
 
+#### Delete Single File
+
+```http
+DELETE /api/files/delete
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "fileId": "file-uuid"
+}
+```
+
+#### Delete Multiple Files (Batch)
+
+```http
+POST /api/files/delete
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "fileIds": ["file-uuid-1", "file-uuid-2", "file-uuid-3"]
+}
+```
+
+#### Generate Secure File URL
+
+```http
+POST /api/files/generate-url
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "fileId": "file-uuid",
+  "expiresIn": 900,
+  "action": "download",
+  "restrictToIP": true,
+  "restrictToUserAgent": false
+}
+```
+
+#### Get File Access Logs
+
+```http
+GET /api/files/access-logs
+Authorization: Bearer <token>
+
+Query parameters:
+- fileId: (string, optional) Filter logs for specific file
+- timeRange: (string, optional) Time range: "1h", "24h", "7d", "30d" (default: "24h")
+- limit: (number, optional) Maximum logs to return (default: 50)
+- offset: (number, optional) Number of logs to skip (default: 0)
+```
+
 ### Response Formats
 
 #### Success Response
+
 ```json
 {
   "success": true,
@@ -174,6 +242,7 @@ Query parameters:
 ```
 
 #### Error Response
+
 ```json
 {
   "error": "Error message describing what went wrong"
@@ -194,28 +263,35 @@ Query parameters:
 
 ### Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `JWT_SECRET` | Secret key for JWT tokens | *(required)* |
-| `MAX_FILE_SIZE` | Maximum file size in bytes | 52428800 (50MB) |
-| `UPLOAD_DIR` | Directory for file storage | ./uploads |
+| Variable           | Description                      | Default            |
+| ------------------ | -------------------------------- | ------------------ |
+| `JWT_SECRET`       | Secret key for JWT tokens        | _(required)_       |
+| `MAX_FILE_SIZE`    | Maximum file size in bytes       | 52428800 (50MB)    |
+| `UPLOAD_DIR`       | Directory for file storage       | ./uploads          |
 | `SESSION_DURATION` | Session duration in milliseconds | 604800000 (7 days) |
-| `NODE_ENV` | Environment mode | development |
+| `NODE_ENV`         | Environment mode                 | development        |
 
-### File Storage
+### File Storage & Security
 
 Files are stored locally in the `uploads` directory by default. Each file gets:
+
 - A unique filename with timestamp and UUID
-- Secure access token for retrieval
-- Metadata stored in SQLite database
+- Secure access token for retrieval (legacy support)
+- Time-limited signed URLs for secure access
+- Metadata stored in SQLite database with audit trails
+- Optional expiration time for automatic cleanup
+- IP and user agent restrictions for enhanced security
+- Comprehensive access logging for monitoring
 - Optional automatic expiration
 
 ### Database Schema
 
-The application uses SQLite with three main tables:
+The application uses SQLite with four main tables:
+
 - `users`: User accounts and authentication
-- `files`: File metadata and access tokens  
+- `files`: File metadata and access tokens
 - `sessions`: Active user sessions
+- `file_access_logs`: Comprehensive audit trail of all file access attempts
 
 ## Development 🛠️
 
@@ -256,7 +332,7 @@ The SQLite database is automatically created and initialized on first run. Table
 Expired files are cleaned up automatically. You can also run cleanup manually:
 
 ```javascript
-import { cleanupExpiredFiles } from '@/lib/file-utils';
+import { cleanupExpiredFiles } from "@/lib/file-utils";
 await cleanupExpiredFiles();
 ```
 
@@ -265,6 +341,7 @@ await cleanupExpiredFiles();
 ### Production Setup
 
 1. **Set production environment variables**
+
    ```env
    NODE_ENV=production
    JWT_SECRET=your-strong-production-secret
@@ -272,6 +349,7 @@ await cleanupExpiredFiles();
    ```
 
 2. **Build the application**
+
    ```bash
    npm run build
    ```
@@ -300,7 +378,7 @@ CMD ["npm", "start"]
 server {
     listen 80;
     server_name yourdomain.com;
-    
+
     location / {
         proxy_pass http://localhost:3000;
         proxy_set_header Host $host;
@@ -308,7 +386,7 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
-    
+
     client_max_body_size 50M;
 }
 ```
@@ -337,20 +415,24 @@ server {
 ### Common Issues
 
 **Database connection errors**
+
 - Ensure the `data` directory exists and is writable
 - Check file permissions on the SQLite database file
 
 **File upload failures**
+
 - Verify the `uploads` directory exists and is writable
 - Check file size limits and allowed file types
 - Ensure sufficient disk space is available
 
 **Authentication issues**
+
 - Verify JWT_SECRET is set in environment variables
 - Check if cookies are being blocked by browser settings
 - Ensure HTTPS is used in production for secure cookies
 
 **Memory issues with large files**
+
 - Consider reducing MAX_FILE_SIZE for resource-constrained environments
 - Implement streaming uploads for very large files
 
