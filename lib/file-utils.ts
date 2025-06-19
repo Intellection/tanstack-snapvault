@@ -7,7 +7,7 @@ import { database, File } from "./database";
 import { generateSecureToken } from "./auth";
 
 const UPLOAD_DIR = path.join(process.cwd(), "uploads");
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ALLOWED_FILE_TYPES = [
   // Images
   "image/jpeg",
