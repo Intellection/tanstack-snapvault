@@ -14,27 +14,11 @@ const ALLOWED_FILE_TYPES = [
   "image/jpg",
   "image/png",
   "image/gif",
-  "image/webp",
-  "image/bmp",
   "image/svg+xml",
   // Documents
-  "application/pdf",
   "text/plain",
   "text/markdown",
-  "application/json",
   "text/csv",
-  // Archives
-  "application/zip",
-  "application/x-zip-compressed",
-  "application/x-rar-compressed",
-  "application/x-7z-compressed",
-  // Office documents
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/vnd.ms-excel",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "application/vnd.ms-powerpoint",
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
 ];
 
 // Ensure upload directory exists
@@ -166,8 +150,6 @@ export async function processImage(
           .toBuffer();
       } else if (mimeType === "image/png") {
         processed = await image.png({ compressionLevel: 8 }).toBuffer();
-      } else if (mimeType === "image/webp") {
-        processed = await image.webp({ quality: 85 }).toBuffer();
       }
     }
 
@@ -423,22 +405,9 @@ export function formatFileSize(bytes: number): string {
 
 export function getFileTypeIcon(mimeType: string): string {
   if (mimeType.startsWith("image/")) return "🖼️";
-  if (mimeType.startsWith("video/")) return "🎥";
-  if (mimeType.startsWith("audio/")) return "🎵";
-  if (mimeType === "application/pdf") return "📄";
-  if (
-    mimeType.includes("zip") ||
-    mimeType.includes("rar") ||
-    mimeType.includes("7z")
-  )
-    return "📦";
-  if (mimeType.includes("word") || mimeType.includes("document")) return "📝";
-  if (mimeType.includes("excel") || mimeType.includes("spreadsheet"))
-    return "📊";
-  if (mimeType.includes("powerpoint") || mimeType.includes("presentation"))
-    return "📋";
   if (mimeType === "text/plain") return "📄";
-  if (mimeType === "application/json") return "🔧";
+  if (mimeType === "text/markdown") return "📝";
+  if (mimeType === "text/csv") return "📊";
   return "📁";
 }
 
@@ -455,17 +424,7 @@ export function isAudioFile(mimeType: string): boolean {
 }
 
 export function isDocumentFile(mimeType: string): boolean {
-  const documentTypes = [
-    "application/pdf",
-    "text/plain",
-    "text/markdown",
-    "application/msword",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "application/vnd.ms-excel",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    "application/vnd.ms-powerpoint",
-    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  ];
+  const documentTypes = ["text/plain", "text/markdown", "text/csv"];
   return documentTypes.includes(mimeType);
 }
 

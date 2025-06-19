@@ -10,7 +10,11 @@
     "lint": "next lint",
     "setup": "node scripts/dev-setup.js",
     "clean": "rm -rf .next data/*.db uploads/* !uploads/.gitkeep",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:headed": "playwright test --headed"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -24,6 +28,7 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.53.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^8.5.9",
     "@types/mime-types": "^2.1.4",

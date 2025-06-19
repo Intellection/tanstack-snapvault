@@ -11,7 +11,7 @@ A lightweight, secure file upload and access API built with Next.js 15 and Tailw
 - **Image Optimization**: Automatic image compression and thumbnail generation
 - **Drag & Drop Upload**: Modern file upload interface with progress tracking
 - **Private by Default**: Each user can only access their own files
-- **Multiple File Types**: Support for images, documents, archives, and more
+- **Supported File Types**: JPG, PNG, GIF, SVG images and TXT, MD, CSV files
 
 ## Tech Stack 🛠️
 
@@ -89,10 +89,10 @@ A lightweight, secure file upload and access API built with Next.js 15 and Tailw
 
 ### Supported File Types
 
-- **Images**: JPEG, PNG, GIF, WebP, BMP, SVG
-- **Documents**: PDF, Text, Markdown, JSON, CSV
-- **Office**: Word, Excel, PowerPoint documents
-- **Archives**: ZIP, RAR, 7Z
+Currently supported file formats:
+
+- **Images**: JPG/JPEG, PNG, GIF, SVG
+- **Text Files**: TXT (plain text), MD (Markdown), CSV (comma-separated values)
 
 ## API Documentation 🔌
 
@@ -422,7 +422,7 @@ server {
 **File upload failures**
 
 - Verify the `uploads` directory exists and is writable
-- Check file size limits and allowed file types
+- Check file size limits and allowed file types (JPG, PNG, GIF, SVG, TXT, MD, CSV)
 - Ensure sufficient disk space is available
 
 **Authentication issues**

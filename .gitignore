@@ -69,3 +69,5 @@ next-env.d.ts
 scripts/test-*
 temp/
 tmp/
+
+test-results/
