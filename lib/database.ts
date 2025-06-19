@@ -55,6 +55,18 @@ export interface Session {
   user_agent?: string;
 }
 
+export interface FileAccessLog {
+  id: string;
+  file_id: string;
+  user_id?: string;
+  ip_address?: string;
+  user_agent?: string;
+  action: string;
+  success: boolean;
+  error_message?: string;
+  created_at: string;
+}
+
 class Database {
   private db: PromisifiedDatabase;
   private initialized = false;
@@ -99,13 +111,27 @@ class Database {
           size INTEGER NOT NULL,
           upload_path TEXT NOT NULL,
           access_token TEXT UNIQUE NOT NULL,
-          expires_at DATETIME,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          expires_at TEXT,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
           download_count INTEGER DEFAULT 0,
-          is_public BOOLEAN DEFAULT FALSE,
+          is_public BOOLEAN DEFAULT 0,
           description TEXT,
           FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
-        )
+        );
+
+        CREATE TABLE IF NOT EXISTS file_access_logs (
+          id TEXT PRIMARY KEY,
+          file_id TEXT NOT NULL,
+          user_id TEXT,
+          ip_address TEXT,
+          user_agent TEXT,
+          action TEXT NOT NULL,
+          success BOOLEAN NOT NULL,
+          error_message TEXT,
+          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (file_id) REFERENCES files (id) ON DELETE CASCADE,
+          FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL
+        );
       `);
 
       // Create sessions table
@@ -252,6 +278,14 @@ class Database {
     );
   }
 
+  async updateFileAccessToken(id: string, newToken: string): Promise<void> {
+    await this.initialize();
+    await this.db.run("UPDATE files SET access_token = ? WHERE id = ?", [
+      newToken,
+      id,
+    ]);
+  }
+
   async deleteFile(id: string): Promise<void> {
     await this.initialize();
     await this.db.run("DELETE FROM files WHERE id = ?", [id]);
@@ -306,6 +340,75 @@ class Database {
     await this.db.run("DELETE FROM sessions WHERE user_id = ?", [userId]);
   }
 
+  // File access logging methods
+  async createFileAccessLog(log: FileAccessLog): Promise<void> {
+    await this.initialize();
+    await this.db.run(
+      `INSERT INTO file_access_logs (id, file_id, user_id, ip_address, user_agent, action, success, error_message, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        log.id,
+        log.file_id,
+        log.user_id,
+        log.ip_address,
+        log.user_agent,
+        log.action,
+        log.success,
+        log.error_message,
+        log.created_at,
+      ],
+    );
+  }
+
+  async getFileAccessLogs(
+    userId: string,
+    fileId?: string,
+    limit = 50,
+    offset = 0,
+  ): Promise<FileAccessLog[]> {
+    await this.initialize();
+
+    let query = `
+      SELECT fal.* FROM file_access_logs fal
+      INNER JOIN files f ON fal.file_id = f.id
+      WHERE f.user_id = ?
+    `;
+    const params: any[] = [userId];
+
+    if (fileId) {
+      query += " AND fal.file_id = ?";
+      params.push(fileId);
+    }
+
+    query += " ORDER BY fal.created_at DESC LIMIT ? OFFSET ?";
+    params.push(limit, offset);
+
+    const logs = await this.db.all(query, params);
+    return logs || [];
+  }
+
+  async getFileAccessLogsSince(
+    fileId: string,
+    since: string,
+  ): Promise<FileAccessLog[]> {
+    await this.initialize();
+    const logs = await this.db.all(
+      "SELECT * FROM file_access_logs WHERE file_id = ? AND created_at >= ? ORDER BY created_at DESC",
+      [fileId, since],
+    );
+    return logs || [];
+  }
+
+  async deleteOldFileAccessLogs(daysOld = 90): Promise<void> {
+    await this.initialize();
+    const cutoffDate = new Date(
+      Date.now() - daysOld * 24 * 60 * 60 * 1000,
+    ).toISOString();
+    await this.db.run("DELETE FROM file_access_logs WHERE created_at < ?", [
+      cutoffDate,
+    ]);
+  }
+
   // Statistics methods
   async getUserFileCount(userId: string): Promise<number> {
     await this.initialize();
@@ -329,6 +432,7 @@ class Database {
   async cleanup(): Promise<void> {
     await this.deleteExpiredFiles();
     await this.deleteExpiredSessions();
+    await this.deleteOldFileAccessLogs();
   }
 
   // Close database connection
