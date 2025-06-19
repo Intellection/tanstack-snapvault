@@ -7,8 +7,8 @@
   "scripts": {
     "dev": "concurrently \"yarn dev:server\" \"yarn dev:client\"",
     "dev:client": "vite",
-    "dev:server": "node --loader ts-node/esm server/index.ts",
-    "build": "tsc && vite build",
+    "dev:server": "tsx server/index.ts",
+    "build": "tsc -p server/tsconfig.json && vite build",
     "start": "node dist/server/index.js",
     "lint": "tsc --noEmit"
   },
@@ -41,6 +41,7 @@
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.5.2",
     "ts-node": "^10.9.2",
+    "tsx": "^4.20.3",
     "typescript": "^5.8.3",
     "vite": "^6.3.5",
     "vite-tsconfig-paths": "^5.1.4"

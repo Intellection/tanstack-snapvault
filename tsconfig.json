@@ -17,16 +17,10 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "~/*": ["./app/*"]
+      "@/*": ["./src/*"]
     },
     "types": ["node"]
   },
-  "include": [
-    "app/**/*",
-    "vite.config.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "include": ["src/**/*", "server/**/*", "vite.config.ts"],
+  "exclude": ["node_modules", "dist"]
 }
