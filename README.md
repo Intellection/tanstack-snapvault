@@ -1,26 +1,34 @@
-# TanStack SnapVault
+# SnapVault 🔒
 
-A modern full-stack web application built with TanStack Start featuring session-based authentication, TypeScript, and a clean, responsive design.
+A lightweight, secure file upload and access API built with Next.js 15 and Tailwind CSS. Think of it as your private, temporary "vault" for screenshots, quick notes, and files you want to access easily — but only your own.
 
-## 🚀 Features
+## Features ✨
 
-- **🔐 Session-based Authentication** - Secure JWT-based sessions with HTTP-only cookies
-- **⚡ TanStack Start** - Modern full-stack React framework with SSR/SSG support
-- **📱 Responsive Design** - Clean, mobile-first UI with custom CSS
-- **🎯 Type Safety** - Full TypeScript support throughout the application
-- **🔄 State Management** - TanStack Query for server state management
-- **🛣️ File-based Routing** - TanStack Router with automatic route generation
-- **🔒 Protected Routes** - Route-level authentication guards
-- **📊 Developer Tools** - Built-in dev tools for routing and queries
+- **Secure File Storage**: Upload files up to 50MB with automatic encryption and access tokens
+- **User Authentication**: Secure user registration and login with JWT sessions
+- **Temporary Links**: Files can auto-expire after specified time periods
+- **File Management**: Upload, download, and manage your files through a clean interface
+- **Image Optimization**: Automatic image compression and thumbnail generation
+- **Drag & Drop Upload**: Modern file upload interface with progress tracking
+- **Private by Default**: Each user can only access their own files
+- **Supported File Types**: JPG, PNG, GIF, SVG images and TXT, MD, CSV files
 
-## 📋 Prerequisites
+## Tech Stack 🛠️
 
-Before you begin, ensure you have the following installed:
+- **Frontend**: Next.js 15 (App Router), React 18, Tailwind CSS 4
+- **Backend**: Next.js API Routes, SQLite database
+- **Authentication**: JWT with secure HTTP-only cookies
+- **File Processing**: Sharp for image optimization
+- **Security**: bcrypt for password hashing, secure file access tokens
 
-- **Node.js** (version 18 or higher)
-- **Yarn** (version 4.x)
+## Quick Start 🚀
 
-## 🛠️ Installation
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+
+### Installation
 
 1. **Clone the repository**
 
@@ -32,248 +40,414 @@ Before you begin, ensure you have the following installed:
 2. **Install dependencies**
 
    ```bash
-   yarn install
+   npm install
    ```
 
 3. **Set up environment variables**
 
    ```bash
-   cp .env.example .env
+   cp .env.example .env.local
    ```
 
-   Edit the `.env` file and update the `JWT_SECRET` with a secure random string:
+   Edit `.env.local` and set your JWT secret:
 
    ```env
    JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-   NODE_ENV=development
-   PORT=3000
    ```
 
-4. **Start the development server**
+4. **Create required directories**
 
    ```bash
-   yarn dev
+   mkdir -p data uploads
    ```
 
-5. **Open your browser**
-   Navigate to `http://localhost:3000` to see the application.
+5. **Run the development server**
 
-## 📁 Project Structure
+   ```bash
+   npm run dev
+   ```
+
+6. **Open your browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+## Usage 📖
+
+### Getting Started
+
+1. **Register an Account**: Create a new account with username, email, and password
+2. **Upload Files**: Drag and drop files or click to browse and upload
+3. **Manage Files**: View, download, and share your uploaded files
+4. **Set Expiration**: Choose when your files should automatically expire
+5. **Share Securely**: Copy secure access links to share specific files
+
+### File Upload Options
+
+- **Public/Private**: Choose whether files can be accessed without authentication
+- **Expiration**: Set files to expire after 1 hour, 24 hours, 1 week, or 1 month
+- **Description**: Add optional descriptions to your files
+- **Multiple Files**: Upload multiple files at once
+
+### Supported File Types
+
+Currently supported file formats:
+
+- **Images**: JPG/JPEG, PNG, GIF, SVG
+- **Text Files**: TXT (plain text), MD (Markdown), CSV (comma-separated values)
+
+## API Documentation 🔌
+
+### Authentication Endpoints
+
+#### Register User
+
+```http
+POST /api/auth/register
+Content-Type: application/json
+
+{
+  "username": "johndoe",
+  "email": "john@example.com",
+  "password": "securepassword123"
+}
+```
+
+#### Login User
+
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "securepassword123"
+}
+```
+
+#### Get Current User
+
+```http
+GET /api/auth/me
+Authorization: Bearer <token>
+```
+
+#### Logout
+
+```http
+POST /api/auth/logout
+Authorization: Bearer <token>
+```
+
+### File Management Endpoints
+
+#### Upload Files
+
+```http
+POST /api/files/upload
+Content-Type: multipart/form-data
+Authorization: Bearer <token>
+
+Form data:
+- file: (file) The file to upload
+- description: (string, optional) File description
+- isPublic: (boolean, optional) Whether file is publicly accessible
+- expiresIn: (number, optional) Hours until expiration
+```
+
+#### Download File
+
+```http
+GET /api/files/{accessToken}
+```
+
+#### Get File Info
+
+```http
+GET /api/files/{accessToken}?info=true
+```
+
+#### List User Files
+
+```http
+GET /api/files/my
+Authorization: Bearer <token>
+
+Query parameters:
+- limit: (number, optional) Maximum files to return (default: 50)
+- offset: (number, optional) Number of files to skip (default: 0)
+```
+
+#### Delete Single File
+
+```http
+DELETE /api/files/delete
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "fileId": "file-uuid"
+}
+```
+
+#### Delete Multiple Files (Batch)
+
+```http
+POST /api/files/delete
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "fileIds": ["file-uuid-1", "file-uuid-2", "file-uuid-3"]
+}
+```
+
+#### Generate Secure File URL
+
+```http
+POST /api/files/generate-url
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "fileId": "file-uuid",
+  "expiresIn": 900,
+  "action": "download",
+  "restrictToIP": true,
+  "restrictToUserAgent": false
+}
+```
+
+#### Get File Access Logs
+
+```http
+GET /api/files/access-logs
+Authorization: Bearer <token>
+
+Query parameters:
+- fileId: (string, optional) Filter logs for specific file
+- timeRange: (string, optional) Time range: "1h", "24h", "7d", "30d" (default: "24h")
+- limit: (number, optional) Maximum logs to return (default: 50)
+- offset: (number, optional) Number of logs to skip (default: 0)
+```
+
+### Response Formats
+
+#### Success Response
+
+```json
+{
+  "success": true,
+  "message": "Operation completed successfully",
+  "data": { ... }
+}
+```
+
+#### Error Response
+
+```json
+{
+  "error": "Error message describing what went wrong"
+}
+```
+
+## Security Features 🔐
+
+- **Password Hashing**: bcrypt with 12 rounds
+- **JWT Tokens**: Secure session management with HTTP-only cookies
+- **File Access Tokens**: Unique, secure tokens for each file
+- **CORS Configuration**: Configurable cross-origin resource sharing
+- **File Validation**: Strict file type and size validation
+- **SQL Injection Protection**: Parameterized database queries
+- **XSS Protection**: Content Security Policy headers
+
+## Configuration ⚙️
+
+### Environment Variables
+
+| Variable           | Description                      | Default            |
+| ------------------ | -------------------------------- | ------------------ |
+| `JWT_SECRET`       | Secret key for JWT tokens        | _(required)_       |
+| `MAX_FILE_SIZE`    | Maximum file size in bytes       | 52428800 (50MB)    |
+| `UPLOAD_DIR`       | Directory for file storage       | ./uploads          |
+| `SESSION_DURATION` | Session duration in milliseconds | 604800000 (7 days) |
+| `NODE_ENV`         | Environment mode                 | development        |
+
+### File Storage & Security
+
+Files are stored locally in the `uploads` directory by default. Each file gets:
+
+- A unique filename with timestamp and UUID
+- Secure access token for retrieval (legacy support)
+- Time-limited signed URLs for secure access
+- Metadata stored in SQLite database with audit trails
+- Optional expiration time for automatic cleanup
+- IP and user agent restrictions for enhanced security
+- Comprehensive access logging for monitoring
+- Optional automatic expiration
+
+### Database Schema
+
+The application uses SQLite with four main tables:
+
+- `users`: User accounts and authentication
+- `files`: File metadata and access tokens
+- `sessions`: Active user sessions
+- `file_access_logs`: Comprehensive audit trail of all file access attempts
+
+## Development 🛠️
+
+### Project Structure
 
 ```
 tanstack-snapvault/
-├── app/                          # Application source code
-│   ├── routes/                   # File-based routing
-│   │   ├── __root.tsx           # Root layout component
-│   │   ├── _layout.tsx          # Main layout with navigation
-│   │   ├── _layout/             # Layout child routes
-│   │   │   ├── index.tsx        # Home page
-│   │   │   ├── login.tsx        # Login page
-│   │   │   ├── register.tsx     # Registration page
-│   │   │   ├── dashboard.tsx    # Protected dashboard
-│   │   │   └── profile.tsx      # Protected profile page
-│   │   └── api/                 # API routes
-│   │       └── auth/            # Authentication endpoints
-│   │           ├── register.ts  # User registration
-│   │           ├── login.ts     # User login
-│   │           ├── logout.ts    # User logout
-│   │           ├── me.ts        # Current user info
-│   │           └── profile.ts   # Profile updates
-│   ├── utils/                   # Utility functions
-│   │   └── auth.ts             # Authentication helpers
-│   ├── components/             # Reusable components
-│   ├── lib/                    # Library configurations
-│   ├── client.tsx              # Client entry point
-│   ├── ssr.tsx                 # Server entry point
-│   ├── router.tsx              # Router configuration
-│   └── routeTree.gen.ts        # Generated route tree
-├── public/                     # Static assets
-├── .env.example               # Environment variables template
-├── package.json               # Dependencies and scripts
-├── tsconfig.json              # TypeScript configuration
-├── vite.config.ts             # Vite configuration
-└── README.md                  # Project documentation
+├── app/                    # Next.js app directory
+│   ├── api/               # API routes
+│   ├── vault/             # Main application pages
+│   ├── globals.css        # Global styles
+│   └── layout.tsx         # Root layout
+├── components/            # Reusable UI components
+├── contexts/              # React contexts
+├── lib/                   # Utility libraries
+│   ├── auth.ts           # Authentication logic
+│   ├── database.ts       # Database operations
+│   └── file-utils.ts     # File handling utilities
+├── uploads/               # File storage directory
+└── data/                  # SQLite database
 ```
 
-## 🔧 Available Scripts
+### Available Scripts
 
-- **`yarn dev`** - Start the development server with hot reloading
-- **`yarn build`** - Build the application for production
-- **`yarn start`** - Start the production server
-- **`yarn lint`** - Run TypeScript type checking
-
-## 🔐 Authentication Flow
-
-The application implements a secure session-based authentication system:
-
-1. **Registration/Login** - Users can create accounts or sign in with email/password
-2. **JWT Sessions** - Upon successful authentication, a JWT token is created
-3. **HTTP-only Cookies** - The JWT is stored in secure, HTTP-only cookies
-4. **Route Protection** - Protected routes automatically redirect unauthenticated users
-5. **Session Persistence** - Sessions persist across browser refreshes
-6. **Secure Logout** - Logout clears the session cookie
-
-### Authentication API Endpoints
-
-- `POST /api/auth/register` - Create a new user account
-- `POST /api/auth/login` - Authenticate user credentials
-- `POST /api/auth/logout` - Clear user session
-- `GET /api/auth/me` - Get current user information
-- `PUT /api/auth/profile` - Update user profile
-
-## 🛣️ Routing
-
-The application uses TanStack Router with file-based routing:
-
-### Public Routes
-
-- `/` - Home page
-- `/login` - User login
-- `/register` - User registration
-
-### Protected Routes
-
-- `/dashboard` - User dashboard (requires authentication)
-- `/profile` - User profile management (requires authentication)
-
-## 🎨 Styling
-
-The application uses custom CSS with a modern design system:
-
-- **Responsive Design** - Mobile-first approach with flexible layouts
-- **Color Scheme** - Professional blue and gray palette
-- **Typography** - System font stack for optimal performance
-- **Components** - Reusable CSS classes for forms, buttons, and cards
-- **Animations** - Smooth transitions and loading states
-
-## 🔒 Security Features
-
-- **Password Hashing** - bcryptjs for secure password storage
-- **JWT Tokens** - Signed tokens with expiration
-- **HTTP-only Cookies** - Prevents XSS attacks
-- **CSRF Protection** - SameSite cookie configuration
-- **Input Validation** - Server-side validation for all inputs
-- **Type Safety** - TypeScript prevents common vulnerabilities
-
-## 🚀 Deployment
-
-### Building for Production
-
-1. **Build the application**
-
-   ```bash
-   yarn build
-   ```
-
-2. **Start the production server**
-   ```bash
-   yarn start
-   ```
-
-### Environment Variables for Production
-
-Ensure you set the following environment variables in production:
-
-```env
-JWT_SECRET=your-secure-production-jwt-secret
-NODE_ENV=production
-PORT=3000
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run start        # Start production server
+npm run lint         # Run ESLint
 ```
 
-### Recommended Hosting Platforms
+### Database Management
 
-- **Vercel** - Optimal for TanStack Start applications
-- **Netlify** - Great for static site generation
-- **Railway** - Simple container deployment
-- **Docker** - For containerized deployments
+The SQLite database is automatically created and initialized on first run. Tables and indexes are set up automatically.
 
-## 🔄 Development Workflow
+### File Cleanup
 
-1. **Create a new feature branch**
+Expired files are cleaned up automatically. You can also run cleanup manually:
 
-   ```bash
-   git checkout -b feature/your-feature-name
+```javascript
+import { cleanupExpiredFiles } from "@/lib/file-utils";
+await cleanupExpiredFiles();
+```
+
+## Deployment 🚀
+
+### Production Setup
+
+1. **Set production environment variables**
+
+   ```env
+   NODE_ENV=production
+   JWT_SECRET=your-strong-production-secret
+   DOMAIN=yourdomain.com
    ```
 
-2. **Make your changes** and test locally with `yarn dev`
-
-3. **Run type checking**
+2. **Build the application**
 
    ```bash
-   yarn lint
+   npm run build
    ```
 
-4. **Build and test the production version**
-
+3. **Start the production server**
    ```bash
-   yarn build
-   yarn start
+   npm start
    ```
 
-5. **Commit your changes** and create a pull request
+### Docker Deployment
 
-## 📦 Technology Stack
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+RUN npm run build
+EXPOSE 3000
+CMD ["npm", "start"]
+```
 
-### Frontend
+### Reverse Proxy Setup (Nginx)
 
-- **React 19** - Latest React with concurrent features
-- **TanStack Router** - Type-safe routing with file-based structure
-- **TanStack Query** - Powerful data fetching and caching
-- **TypeScript** - Static type checking for better development experience
+```nginx
+server {
+    listen 80;
+    server_name yourdomain.com;
 
-### Backend
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
 
-- **TanStack Start** - Full-stack React framework
-- **Node.js** - JavaScript runtime for server-side logic
-- **JWT** - JSON Web Tokens for authentication
-- **bcryptjs** - Password hashing for security
+    client_max_body_size 50M;
+}
+```
 
-### Development Tools
-
-- **Vite** - Fast build tool and development server
-- **TanStack Router Devtools** - Route debugging and inspection
-- **TanStack Query Devtools** - Query state visualization
-- **TypeScript** - Enhanced IDE support and error catching
-
-## 🤝 Contributing
+## Contributing 🤝
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'Add amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
 5. Open a Pull Request
 
-## 📄 License
+## Roadmap 🗺️
+
+- [ ] Cloud storage integration (AWS S3, Google Cloud)
+- [ ] Email notifications for file shares
+- [ ] Advanced file preview capabilities
+- [ ] API rate limiting and abuse prevention
+- [ ] File sharing with password protection
+- [ ] Bulk file operations
+- [ ] File versioning system
+- [ ] Analytics and usage statistics
+
+## Troubleshooting 🔧
+
+### Common Issues
+
+**Database connection errors**
+
+- Ensure the `data` directory exists and is writable
+- Check file permissions on the SQLite database file
+
+**File upload failures**
+
+- Verify the `uploads` directory exists and is writable
+- Check file size limits and allowed file types (JPG, PNG, GIF, SVG, TXT, MD, CSV)
+- Ensure sufficient disk space is available
+
+**Authentication issues**
+
+- Verify JWT_SECRET is set in environment variables
+- Check if cookies are being blocked by browser settings
+- Ensure HTTPS is used in production for secure cookies
+
+**Memory issues with large files**
+
+- Consider reducing MAX_FILE_SIZE for resource-constrained environments
+- Implement streaming uploads for very large files
+
+## License 📄
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🐛 Known Issues
-
-- Route devtools may show warnings in development - this is expected with the current TanStack Router version
-- Some peer dependency warnings during installation - these don't affect functionality
-
-## 🔮 Future Enhancements
-
-- [ ] Database integration (PostgreSQL/MongoDB)
-- [ ] Email verification system
-- [ ] Two-factor authentication
-- [ ] Social OAuth providers (Google, GitHub)
-- [ ] File upload capabilities
-- [ ] Real-time notifications
-- [ ] Dark mode support
-- [ ] Internationalization (i18n)
-- [ ] API rate limiting
-- [ ] Advanced user roles and permissions
-
-## 📞 Support
+## Support 💬
 
 If you encounter any issues or have questions:
 
-1. Check the [existing issues](../../issues)
-2. Create a new issue with a detailed description
-3. Include steps to reproduce any bugs
-4. Provide your environment details (Node.js version, OS, etc.)
+1. Check the [troubleshooting section](#troubleshooting-🔧)
+2. Search existing [GitHub issues](../../issues)
+3. Create a new issue with detailed information about your problem
 
 ---
 
-Built with ❤️ using TanStack Start
+**SnapVault** - Your secure, private file vault. Built with ❤️ using Next.js and Tailwind CSS.
