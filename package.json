@@ -1,0 +1,48 @@
+{
+  "name": "tanstack-snapvault",
+  "version": "1.0.0",
+  "description": "A modern web application built with TanStack Start and session-based authentication",
+  "type": "module",
+  "packageManager": "yarn@4.5.1",
+  "scripts": {
+    "dev": "concurrently \"yarn dev:server\" \"yarn dev:client\"",
+    "dev:client": "vite",
+    "dev:server": "node --loader ts-node/esm server/index.ts",
+    "build": "tsc && vite build",
+    "start": "node dist/server/index.js",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.80.10",
+    "@tanstack/react-router": "^1.121.24",
+    "@tanstack/router-core": "^1.121.21",
+    "@types/bcryptjs": "^3.0.0",
+    "@types/cookie": "^1.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
+    "bcryptjs": "^3.0.2",
+    "concurrently": "^9.1.2",
+    "cookie": "^1.0.2",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "tiny-invariant": "^1.3.3"
+  },
+  "devDependencies": {
+    "@tanstack/react-query-devtools": "^5.80.10",
+    "@tanstack/router-devtools": "^1.121.24",
+    "@tanstack/router-generator": "^1.121.25",
+    "@tanstack/router-vite-plugin": "^1.121.25",
+    "@types/node": "^24.0.3",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.5.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vite-tsconfig-paths": "^5.1.4"
+  }
+}
